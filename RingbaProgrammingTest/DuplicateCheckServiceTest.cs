@@ -4,18 +4,18 @@ namespace RingbaProgrammingTest
 {
     public class DuplicateCheckServiceTest
     {
-        HighlyOptimizedThreadSafeDuplicateCheckService Service;
-
-        public DuplicateCheckServiceTest(HighlyOptimizedThreadSafeDuplicateCheckService service)
-        {
-            Service = service;
-        }
+        IDuplicateCheckService Service;
 
         [Fact]
         public async void IsThisTheFirstTimeWeHaveSeenOrderedTest()
         {
-            Service.Arr = new int[]{ 1, 2, 3, 5, 9, 11, 13, 17, 24 };
-            bool result = await Service.IsThisTheFirstTimeWeHaveSeenOrdered(12);
+            int[] arr = { 1, 2, 3, 5, 9, 11, 13, 17, 24 };
+            int NumberOfThreads = 1;
+            int id = 14;
+
+            Service = new HighlyOptimizedThreadSafeDuplicateCheckService(arr, NumberOfThreads);
+            
+            bool result = await Service.IsThisTheFirstTimeWeHaveSeenOrdered(id);
 
             Assert.Equal(result, true);
         }
@@ -23,8 +23,13 @@ namespace RingbaProgrammingTest
         [Fact]
         public async void IsThisTheFirstTimeWeHaveSeenUnorderedTest()
         {
-            Service.Arr = new int[] { 1, 2, 3, 5, 9, 11, 13, 17, 24 };
-            bool result = await Service.IsThisTheFirstTimeWeHaveSeenUnordered(11);
+            int[] arr = { 1, 2, 3, 5, 9, 11, 13, 17, 24 };
+            int NumberOfThreads = 1;
+            int id = 11;
+
+            Service = new HighlyOptimizedThreadSafeDuplicateCheckService(arr, NumberOfThreads);
+            
+            bool result = await Service.IsThisTheFirstTimeWeHaveSeenUnordered(id);
 
             Assert.Equal(result, false);
         }

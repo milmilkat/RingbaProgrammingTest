@@ -6,40 +6,56 @@ namespace RingbaProgrammingTest
     public class HighlyOptimizedThreadSafeDuplicateCheckService : IDuplicateCheckService
     {
         public int[] Arr;
-        public int Max;
-        public int Min;
 
-        public HighlyOptimizedThreadSafeDuplicateCheckService(int[] arr)
+        private int NumberOfThreads = 1;
+        private int[] Indices;
+
+        public HighlyOptimizedThreadSafeDuplicateCheckService(int[] arr, int numOfThreads)
         {
             Arr = arr;
-            Max = arr.Length - 1;
-            Min = 0;
-        }
+            NumberOfThreads = numOfThreads;
+            Indices = new int[NumberOfThreads + 1];
+            Indices[0] = 0;
 
-        public async Task<bool> IsThisTheFirstTimeWeHaveSeenOrdered(int id)
-        {
-            int result = -1;
+            for (int i = 1; i < NumberOfThreads + 1; i++)
+                Indices[i] = (Arr.Length / NumberOfThreads) * (i);
 
-            await Task.Run(() => result = Array.BinarySearch(Arr, id));
-
-            if (result < 0)
-                return true;
-            else
-                return false;
+            if (Arr.Length % 2 != 0)
+                Indices[NumberOfThreads] = Arr.Length;
         }
 
         public async Task<bool> IsThisTheFirstTimeWeHaveSeenUnordered(int id)
         {
             bool result = true;
 
-            await Task.Run(() =>
-            {
-                for (int i = 0; i < Arr.Length; i++)
-                    if (id == Arr[i])
-                        result = false;
-            });
+            for (int i = 0; i < NumberOfThreads; i++)
+                await Task.Run(() =>
+                {
+                    for (int j = Indices[i]; j < Indices[i+1]; j++)
+                        if (id == Arr[j])
+                            result = false;
+                });
 
-            return result;
+                if (!result)
+                    return false;
+
+            return true;
+        }
+
+        public async Task<bool> IsThisTheFirstTimeWeHaveSeenOrdered(int id)
+        {
+            int result = -1;
+
+            for (int i = 0; i < NumberOfThreads; i++)
+            {
+                await Task.Run(()
+                    => result = Array.BinarySearch(Arr[Indices[i]..Indices[i + 1]], id));
+
+                if (result >= 0)
+                    return false;
+            }
+
+            return true;
         }
     }
 }
